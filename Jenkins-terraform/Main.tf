@@ -1,76 +1,78 @@
-resource "aws_iam_role" "my_role" {
-  name = "Jenkins-terraform"
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
+#VPC
+module "vpc" {
+  source = "terraform-aws-modules/vpc/aws"
+
+  name = "jenkins-vpc"
+  cidr = var.vpc_cidr
+
+  azs            = data.aws_availability_zones.azs.names
+  public_subnets = var.public_subnets
+  map_public_ip_on_launch = true
+
+  enable_dns_hostnames = true
+
+  tags = {
+    Name        = "jenkins-vpc"
+    Terraform   = "true"
+    Environment = "dev"
+  }
+
+  public_subnet_tags = {
+    Name = "jenkins-subnet"
+  }
+}
+
+#SG
+module "sg" {
+  source = "terraform-aws-modules/security-group/aws"
+
+  name        = "jenkins-sg"
+  description = "Security group for Jenkins Server"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress_with_cidr_blocks = [
+    for port in [22, 80, 443, 8080, 9000, 3000] :
     {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "ec2.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOF
-}
-
-resource "aws_iam_role_policy_attachment" "example_attachment" {
-  role       = aws_iam_role.my_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-}
-
-resource "aws_iam_instance_profile" "example_profile" {
-  name = "Jenkins-terraform"
-  role = aws_iam_role.my_role.name
-}
-
-
-resource "aws_security_group" "Jenkins-sg" {
-  name        = "Jenkins-Security Group"
-  description = "Open 22,443,80,8080,9000"
-
-  # Define a single ingress rule to allow traffic on all specified ports
-  ingress = [
-    for port in [22, 80, 443, 8080, 9000, 3000] : {
-      description      = "TLS from VPC"
-      from_port        = port
-      to_port          = port
-      protocol         = "tcp"
-      cidr_blocks      = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      security_groups  = []
-      self             = false
+      from_port   = port
+      to_port     = port
+      protocol    = "tcp"
+      description = "TLS from VPC"
+      cidr_blocks = "0.0.0.0/0"
     }
   ]
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  egress_with_cidr_blocks = [
+    {
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = "0.0.0.0/0"
+    }
+  ]
 
   tags = {
-    Name = "Jenkins-sg"
+    Name = "jenkins-sg"
   }
 }
+#EC2
+module "ec2_instance" {
+  source = "terraform-aws-modules/ec2-instance/aws"
 
-resource "aws_instance" "web" {
-  ami                    = "ami-06aa3f7caf3a30282"
-  instance_type          = "t2.medium"
-  key_name               = "Terra-Jen"
-  vpc_security_group_ids = [aws_security_group.Jenkins-sg.id]
-  user_data              = templatefile("./install_jenkins.sh", {})
-  iam_instance_profile   = aws_iam_instance_profile.example_profile.name
+  name = "Jenkins-Argo-Server"
+
+  ami                         = "ami-06aa3f7caf3a30282"
+  instance_type               = var.instance_type
+  key_name                    = "Terra-Jen"
+  monitoring                  = true
+  vpc_security_group_ids      = [module.sg.security_group_id]
+  subnet_id                   = module.vpc.public_subnets[0]
+  associate_public_ip_address = true
+  user_data                   = templatefile("./install_jenkins.sh", {})
+  availability_zone           = data.aws_availability_zones.azs.names[0]
 
   tags = {
-    Name = "Jenkins-Argo"
-  }
-
-  root_block_device {
-    volume_size = 30
+    Name        = "Jenkins-Argo"
+    Terraform   = "true"
+    Environment = "dev"
   }
 }
