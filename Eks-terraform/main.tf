@@ -44,9 +44,18 @@ module "eks" {
 
   eks_managed_node_groups = {
     node = {
-      min_size     = 2
+      min_size     = 1
       max_size     = 3
-      desired_size = 3
+      desired_size = 1
+
+      instance_types = ["t2.small"]
+      #capacity_type  = "SPOT"
+    }
+
+    node2 = {
+      min_size     = 1
+      max_size     = 3
+      desired_size = 1
 
       instance_types = ["t2.small"]
       #capacity_type  = "SPOT"
