@@ -12,17 +12,18 @@ pipeline{
         }*/
 
 
+        /*
         stage("Checkout from SCM"){
             steps {
                 sh 'mvn clean package'
             }
-        }
+        }*/
 
-        /*stage("Test application"){
+        stage("Test application"){
             steps {
                 sh 'mvn test'
             }
-        }*/
+        }
     }
 
 }
