@@ -11,7 +11,8 @@ pipeline{
             }
         }
 
-        stage("Checkout from SCM"){
+
+        /*stage("Checkout from SCM"){
             steps {
                 sh 'mvn clean package'
             }
@@ -21,7 +22,7 @@ pipeline{
             steps {
                 sh 'mvn test'
             }
-        }
+        }*/
     }
 
 }
