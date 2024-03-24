@@ -5,13 +5,13 @@ pipeline{
         maven 'Maven3'
     }
     stages{
-        stage{"Cleanup workspace"}{
+        stage("Cleanup workspace"){
             steps {
                 cleanWs()
             }
         }
 
-        stage{"Checkout from SCM"}{
+        stage("Checkout from SCM"){
             steps {
                 git branch: 'main', credentialsId: 'github', url: 'https://github.com/Tr1p79/terraform'
             }
