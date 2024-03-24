@@ -13,13 +13,13 @@ pipeline{
 
         stage("Checkout from SCM"){
             steps {
-                sh "mvn clean package"
+                sh 'mvn clean package'
             }
         }
 
         stage("Test application"){
             steps {
-                sh "mvn test"
+                sh 'mvn test'
             }
         }
     }
