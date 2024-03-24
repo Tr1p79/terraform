@@ -5,7 +5,6 @@ pipeline{
         maven '3.6.3'
     }
     stages{ 
-
         stage("Checkout from SCM"){
             steps {
                 sh 'mvn clean package'
@@ -18,10 +17,17 @@ pipeline{
             }
         }
 
+        /*
         stage("Cleanup workspace"){
             steps {
                 cleanWs()
             }
+        }*/
+    }
+
+    post { 
+        always { 
+            cleanWs()
         }
     }
 
