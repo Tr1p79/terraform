@@ -13,7 +13,13 @@ pipeline{
 
         stage("Checkout from SCM"){
             steps {
-                git branch: 'main', credentialsId: 'github', url: 'https://github.com/Tr1p79/terraform'
+                sh "mvn clean package"
+            }
+        }
+
+        stage("Test application"){
+            steps {
+                sh "mvn test"
             }
         }
     }
