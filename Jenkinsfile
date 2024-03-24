@@ -5,11 +5,11 @@ pipeline{
         maven '3.6.3'
     }
     stages{
-        /*stage("Cleanup workspace"){
+        stage("Cleanup workspace"){
             steps {
                 cleanWs()
             }
-        }*/
+        }
 
         stage("Checkout from SCM"){
             steps {
