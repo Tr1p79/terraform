@@ -17,12 +17,14 @@ pipeline{
             }
         }
 
-        /*
-        stage("Cleanup workspace"){
+        
+        stage("Sonarqube Analysis"){
             steps {
-                cleanWs()
+                withSonarQubeEnv(credentialsID: 'jenkins-sonar-qube-token') {
+                    sh 'mvn sonar:sonar'
+                }
             }
-        }*/
+        }
     }
 
     post { 
