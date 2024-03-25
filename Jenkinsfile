@@ -5,6 +5,14 @@ pipeline{
         //maven '3.6.3'
         maven 'Maven3'
     }
+    environment {
+        APP_NAME = "e2e-pipepline"
+        RELEASE = "1.0.0"
+        DOCKER_USER = "tompli"
+        DOCKER_PASS = 'dockerhub'
+        IMAGE_NAME = "${DOCKER_USER}" + "/" + "${APP_NAME}"
+        IMAGE_TAG "${RELEASE}-${BUILD_NUMBER}"
+    }
     stages{ 
         stage("Checkout from SCM"){
             steps {
@@ -35,6 +43,20 @@ pipeline{
                     waitForQualityGate abortPipepline: false, credentialsId: 'jenkins-sonar-qube-token'
                     
                     
+                }   
+            }
+        }
+
+        stage("Build & Push Docker Image"){
+            steps {
+                script {
+                    docker.withRegistry('', DOCKER_PASS) {
+                        docker_image = docker.build "${IMAGE_NAME}"
+                    }
+
+                    docker.withRegistry('', DOCKER_PASS) {
+                        docker_image.push("${IMAGE_TAG}")
+                    }
                 }   
             }
         }
