@@ -2,8 +2,8 @@ pipeline{
     agent any
     tools {
         jdk 'Java17'
-        // maven '3.6.3'
-        maven 'Maven3'
+        maven '3.6.3'
+        //maven 'Maven3'
     }
     stages{ 
         stage("Checkout from SCM"){
